@@ -1,6 +1,6 @@
 {
     "name": "pets",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "cli for generating a db of random pets",
     "main": "./lib/pets.js",
     "bin": "./bin/pets-cli",
@@ -26,14 +26,13 @@
     "license": "ISC",
     "dependencies": {
         "config-chain": "^1.1.13",
-        "csv-parser": "^3.0.0",
         "nopt": "^6.0.0",
         "npmlog": "^6.0.2",
         "opener": "^1.5.2",
-        "osenv": "^0.1.5",
-        "request": "^2.88.2"
+        "osenv": "^0.1.5"
     },
     "devDependencies": {
+        "@faker-js/faker": "^7.4.0",
         "glob": "^8.0.3",
         "hock": "^1.4.1",
         "marked": "^0.3",

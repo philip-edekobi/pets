@@ -5,47 +5,52 @@ const pets = require("../lib/pets.js");
 const nopt = require("nopt");
 const log = require("npmlog");
 const pkg = require("../package.json");
+const osenv = require("osenv");
+const path = require("path");
+const fs = require("fs");
 
 const parsed = nopt({}, {}, process.argv, 2);
+parsed.conf = osenv.home() + path.sep + ".petsrc";
+
+if (!fs.existsSync(parsed.conf)) {
+  fs.writeFileSync(parsed.conf, "");
+}
 
 const cmd = parsed.argv.remain.shift();
 
 function errorHandler(err) {
-    if (!err) {
-        process.exit(1);
-    }
-
-    if (err.type === "EUSAGE") {
-        err.message && log.error(err.message);
-        process.exit(1);
-    }
-
-    err.message && log.error(err.message);
-
-    if (err.stack) {
-        log.error("", err.stack);
-        log.error("", "");
-        log.error("", "");
-        log.error("", "pets:", pkg.version, "node:", process.version);
-        log.error(
-            "",
-            "please open an issue including this log on " + pkg.bugs.url
-        );
-    }
+  if (!err) {
     process.exit(1);
+  }
+
+  if (err.type === "EUSAGE") {
+    err.message && log.error(err.message);
+    process.exit(1);
+  }
+
+  err.message && log.error(err.message);
+
+  if (err.stack) {
+    log.error("", err.stack);
+    log.error("", "");
+    log.error("", "");
+    log.error("", "pets:", pkg.version, "node:", process.version);
+    log.error("", "please open an issue including this log on " + pkg.bugs.url);
+  }
+  process.exit(1);
 }
 
 (async () => {
-    try {
-        await pets.load();
+  try {
+    await pets.load(parsed);
 
-        if (!cmd) {
-            const err = new Error("missing 1 or more positional arguments");
-            err.type = "EUSAGE";
-            throw err;
-        }
-        pets.cli[cmd].apply(null, parsed.argv.remain);
-    } catch (err) {
-        errorHandler(err);
+    if (!cmd) {
+      const err = new Error("missing 1 or more positional arguments");
+      err.type = "EUSAGE";
+      throw err;
     }
+    pets.cli[cmd].apply(null, parsed.argv.remain);
+  } catch (err) {
+    errorHandler(err);
+  }
 })();
