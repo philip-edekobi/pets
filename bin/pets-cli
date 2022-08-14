@@ -49,7 +49,7 @@ function errorHandler(err) {
       err.type = "EUSAGE";
       throw err;
     }
-    pets.cli[cmd].apply(null, parsed.argv.remain);
+    pets.cli[cmd].apply(null, parsed.argv.remain).catch(errorHandler);
   } catch (err) {
     errorHandler(err);
   }
