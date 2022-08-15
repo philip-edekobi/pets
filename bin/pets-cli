@@ -9,7 +9,19 @@ const osenv = require("osenv");
 const path = require("path");
 const fs = require("fs");
 
-const parsed = nopt({}, {}, process.argv, 2);
+const parsed = nopt(
+  {
+    "output": [String],
+    "rows": [Number],
+  },
+  {
+    "o": ["--output"],
+    "r": ["--rows"],
+  },
+  process.argv,
+  2
+);
+
 parsed.conf = osenv.home() + path.sep + ".petsrc";
 
 if (!fs.existsSync(parsed.conf)) {
