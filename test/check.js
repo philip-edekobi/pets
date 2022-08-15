@@ -3,7 +3,6 @@
 const assert = require("assert");
 const fs = require("fs");
 const spawn = require("child_process").spawn;
-const spawnSync = require("child_process").spawnSync;
 
 const check = require("../lib/check").api;
 
@@ -152,15 +151,76 @@ describe("check", () => {
       });
 
       child.on("close", () => {
-        assert.equal(buffer, "ERR! the directory you used is invalid \n");
+        assert.equal(buffer, "ERR! the given path does not exist \n");
       });
       done();
     });
   });
 
   describe("api", () => {
-    it("works works without a specified path when db exists", (done) => {
-      assert.equal(check());
+    it("works without a specified path when db exists", async () => {
+      let testPath = `${process.cwd()}/db.json`;
+
+      try {
+        fs.writeFileSync(testPath, "");
+
+        const result = await check();
+
+        fs.unlinkSync(testPath);
+
+        return assert.deepEqual(result, true);
+      } catch (err) {
+        throw err;
+      }
+    });
+
+    it("works without a specified path when db does not exist", async () => {
+      let testPath = `${process.cwd()}/db.json`;
+
+      try {
+        if (fs.existsSync(testPath)) fs.unlinkSync(testPath);
+
+        const result = await check();
+
+        return assert.deepEqual(result, false);
+      } catch (err) {
+        throw err;
+      }
+    });
+
+    it("works with a specified path when db exists", async () => {
+      let testPath = `${__dirname}/placeholder`;
+
+      try {
+        fs.writeFileSync(`${testPath}/db.json`, "");
+
+        const result = await check(testPath);
+
+        fs.unlinkSync(`${testPath}/db.json`);
+
+        return assert.deepEqual(result, true);
+      } catch (err) {
+        throw err;
+      }
+    });
+
+    it("works with a specified path when db does not exist", async () => {
+      let testPath = `${__dirname}/placeholder`;
+
+      try {
+        if (fs.existsSync(`${testPath}/db,json`))
+          fs.unlinkSync(`${testPath}/db.json`);
+
+        const result = await check(testPath);
+
+        return assert.deepEqual(result, false);
+      } catch (error) {
+        throw error;
+      }
+    });
+
+    it("returns an error on invalid directory", async () => {
+      return assert.rejects(async () => await check("ppp"));
     });
   });
 });
