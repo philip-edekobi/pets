@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "test": "mocha -R spec",
-    "docs": "node ./doc/build.js",
+    "docs": "cd doc && node build.js",
     "prepublish": "yarn docs"
   },
   "directories": {

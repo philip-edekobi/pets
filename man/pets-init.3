@@ -1,0 +1,20 @@
+.TH "PETS\-INIT" "3" "August 2022" "" ""
+.SH "NAME"
+\fBpets-init\fR \- Create a JSON file consisting of a pets array
+.SH SYNOPSIS
+.P
+.RS 2
+.nf
+pets\.commands\.init(path?: String, output?: String, rows?: Number): undefined
+.fi
+.RE
+.SH DESCRIPTION
+.P
+\fBpath\fP, \fBoutput\fP and \fBrows\fP are optional arguments\.
+.P
+\fBpath\fP provides the desired file path of the JSON file\. If not specified, it defaults to the current directory\.
+.P
+\fBoutput\fP changes the name of the output JSON file from "db" to a specified name\. The format remains JSON\.
+.P
+\fBrows\fP specifies the number of pets in the db\.
+
