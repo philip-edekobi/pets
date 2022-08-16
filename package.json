@@ -1,6 +1,6 @@
 {
   "name": "pets",
-  "version": "1.2.0",
+  "version": "1.3.1",
   "description": "cli for generating a db of random pets",
   "main": "./lib/pets.js",
   "bin": "./bin/pets-cli",
