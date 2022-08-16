@@ -8,6 +8,8 @@ const path = require("path");
 const fs = require("fs");
 const spawnSync = require("child_process").spawnSync;
 
+const templateFile = __dirname + "/website/template.html";
+
 function cleanUpMan() {
   //delete this directory
   rimraf.sync(__dirname + "/../man/");
@@ -56,6 +58,64 @@ const sources = {
   websiteIndex: getSources("website"),
 };
 
+function getTocForWebsite() {
+  let toc = "<ul>";
+
+  Object.keys(sources).forEach((type) => {
+    if (type === "websiteIndex") {
+      return;
+    }
+
+    toc += `<li><span>${type}</span><ul>`;
+
+    sources[type].forEach((currentFile) => {
+      const prefix = type === "cli" ? "cli-" : "api-";
+
+      const file = path
+        .basename(currentFile)
+        .replace("lounger-", prefix)
+        .replace(/\.md/, ".html");
+
+      const linktext = path
+        .basename(currentFile)
+        .replace("lounger-", "")
+        .replace(/\.md/, "");
+
+      toc += `<li><a href="${file}">${linktext}</a></li>`;
+    });
+    toc += "</ul></li>";
+  });
+
+  toc += "</ul>";
+
+  return toc;
+}
+
+function getTargetForWebsite(currentFile, type) {
+  let target = currentFile;
+  // modifiy the filename a bit for our html file:
+  // prefix all cli functions with cli- instead of lounger-
+  // prefix all api functions with api- instead of lounger-
+  if (type === "cli") {
+    target = currentFile.replace(/lounger-/, "cli-");
+  }
+
+  if (type === "api") {
+    target = currentFile.replace(/lounger-/, "api-");
+  }
+
+  // set the file ending to html
+  target = target.replace(/\.md$/, ".html");
+
+  // replace the source dir with the target dir
+  target = target
+    .replace(["doc", "cli"].join(path.sep), "website")
+    .replace(["doc", "api"].join(path.sep), "website")
+    .replace(["doc", "website"].join(path.sep), "website");
+
+  return target;
+}
+
 (() => {
   cleanUpMan();
 
@@ -79,4 +139,28 @@ const sources = {
   });
 })();
 
-(() => {})();
+(() => {
+  cleanUpWebsite();
+
+  const template = fs.readFileSync(templateFile, "utf8");
+  const toc = getTocForWebsite();
+
+  Object.keys(sources).forEach((type) => {
+    sources[type].forEach((currentFile) => {
+      // convert markdown to website content
+      const out = spawnSync("node", [
+        "../node_modules/marked/bin/marked",
+        currentFile,
+      ]);
+
+      const target = getTargetForWebsite(currentFile, type);
+
+      const rendered = template
+        .replace("__CONTENT__", out.stdout)
+        .replace("__TOC__", toc);
+
+      // write output to target file
+      fs.writeFileSync(target, rendered, "utf8");
+    });
+  });
+})();
