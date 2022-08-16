@@ -40,6 +40,7 @@ describe("init", () => {
 
           child.on("close", () => {
             assert.equal(buffer, "DB created and initialized successfully\n");
+            assert.deepEqual(fs.existsSync("./db.json"), true);
             done();
             cleanup();
           });
@@ -68,6 +69,7 @@ describe("init", () => {
 
           child.on("close", () => {
             assert.equal(buffer, "DB created and initialized successfully\n");
+            assert.deepEqual(fs.existsSync("./test/db.json"), true);
             done();
             cleanup();
           });
@@ -78,6 +80,111 @@ describe("init", () => {
         })();
       } catch (error) {
         throw new Error(error);
+      }
+    });
+
+    it("works with output flag", (done) => {
+      try {
+        let buffer = "";
+
+        (async () => {
+          const child = spawn(
+            "node",
+            ["./bin/pets-cli", "init", "./test", "-o", "test"],
+            {
+              cwd: __dirname + "/..",
+            }
+          );
+
+          child.stdout.on("data", (buffString) => {
+            buffer += buffString.toString();
+          });
+
+          child.on("close", () => {
+            assert.equal(buffer, "DB created and initialized successfully\n");
+            assert.deepEqual(fs.existsSync("./test/test.json"), true);
+            done();
+            cleanup();
+          });
+
+          function cleanup() {
+            fs.unlinkSync("./test/test.json");
+          }
+        })();
+      } catch (error) {
+        throw error;
+      }
+    });
+
+    it("works with rows flag", (done) => {
+      try {
+        let buffer = "";
+
+        (async () => {
+          const child = spawn(
+            "node",
+            ["./bin/pets-cli", "init", "./test", "-r", "240"],
+            {
+              cwd: __dirname + "/..",
+            }
+          );
+
+          child.stdout.on("data", (buffString) => {
+            buffer += buffString.toString();
+          });
+
+          child.on("close", () => {
+            assert.equal(buffer, "DB created and initialized successfully\n");
+            assert.deepEqual(fs.existsSync("./test/db.json"), true);
+            const strJson = fs.readFileSync("./test/db.json");
+            const json = JSON.parse(strJson);
+            assert.equal(json.pets.length, 240);
+            done();
+            cleanup();
+          });
+
+          function cleanup() {
+            fs.unlinkSync("./test/db.json");
+          }
+        })();
+      } catch (error) {
+        throw error;
+      }
+    });
+
+    it("works with output and rows flag together", (done) => {
+      try {
+        let buffer = "";
+
+        (async () => {
+          const child = spawn(
+            "node",
+            ["./bin/pets-cli", "init", "./test", "-o", "test", "-r", "240"],
+            {
+              cwd: __dirname + "/..",
+            }
+          );
+
+          child.stdout.on("data", (buffString) => {
+            buffer += buffString.toString();
+          });
+
+          child.on("close", () => {
+            assert.equal(buffer, "DB created and initialized successfully\n");
+            assert.deepEqual(fs.existsSync("./test/test.json"), true);
+            const strJson = fs.readFileSync("./test/test.json");
+            const json = JSON.parse(strJson);
+            assert.equal(json.pets.length, 240);
+            done();
+            cleanup();
+          });
+
+          function cleanup() {
+            fs.unlinkSync("./test/test.json");
+          }
+        })();
+      } catch (error) {
+        throw error;
       }
     });
   });
